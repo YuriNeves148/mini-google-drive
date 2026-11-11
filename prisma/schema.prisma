@@ -45,8 +45,8 @@ model Arquivo {
   id_arquivo         Int                @id @default(autoincrement())
   usuario_id         Int
   pasta_id           Int?
-  nome_arquivo       String             @db.VarChar(50)
-  storage_key        String             @db.VarChar(255)
+  nome_arquivo       String             @db.VarChar(100)
+  storage_key        String             @unique @db.VarChar(255)
   tipo               String             @db.VarChar(100)
   tamanho            BigInt
   criado_em          DateTime           @default(now())
