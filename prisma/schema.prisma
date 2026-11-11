@@ -15,6 +15,7 @@ datasource db {
 // inicialmente sem o identificador do google
 model Usuario {
   id_usuario           Int                @id @default(autoincrement())
+  id_google            String             @unique
   nome_usuario         String             @unique @db.VarChar(50)
   email                String             @unique @db.VarChar(255)
   foto_perfil          String?            @db.VarChar(255)
