@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// inicialmente sem o identificador do google
+model Usuario {
+  id_usuario           Int                @id @default(autoincrement())
+  nome_usuario         String             @unique @db.VarChar(50)
+  email                String             @unique @db.VarChar(255)
+  foto_perfil          String?            @db.VarChar(255)
+  criado_em            DateTime           @default(now())
+  editado_em           DateTime           @updatedAt
+  usuario_fk_pasta     Pasta[]
+  usuario_fk_arquivo   Arquivo[]
+  proprietario_fk_comp Compartilhamento[] @relation("Proprietario")
+  destinatario_fk_comp Compartilhamento[] @relation("Destinatario")
+}
+
+model Pasta {
+  id_pasta          Int                @id @default(autoincrement())
+  id_pasta_pai      Int?
+  usuario_id        Int
+  nome_pasta        String             @db.VarChar(100)
+  criado_em         DateTime           @default(now())
+  editado_em        DateTime           @updatedAt
+  usuario_fk_pasta  Usuario            @relation(fields: [usuario_id], references: [id_usuario], onUpdate: Cascade, onDelete: Cascade)
+  pasta_fk_arquivos Arquivo[]
+  pasta_fk_comp     Compartilhamento[]
+  // subpastas
+  pasta_pai         Pasta?             @relation("subpastas", fields: [id_pasta_pai], references: [id_pasta], onDelete: NoAction, onUpdate: NoAction)
+  subpastas         Pasta[]            @relation("subpastas")
+}
+
+model Arquivo {
+  id_arquivo         Int                @id @default(autoincrement())
+  usuario_id         Int
+  pasta_id           Int?
+  nome_arquivo       String             @db.VarChar(50)
+  storage_key        String             @db.VarChar(255)
+  tipo               String             @db.VarChar(100)
+  tamanho            BigInt
+  criado_em          DateTime           @default(now())
+  editado_em         DateTime           @updatedAt
+  usuario_fk_arquivo Usuario            @relation(fields: [usuario_id], references: [id_usuario], onUpdate: Cascade, onDelete: Cascade)
+  pasta_fk_arquivo   Pasta?             @relation(fields: [pasta_id], references: [id_pasta], onUpdate: Cascade, onDelete: Cascade)
+  arquivo_fk_comp    Compartilhamento[]
+}
+
+model Compartilhamento {
+  id_comp              Int      @id @default(autoincrement())
+  arquivo_id           Int?
+  pasta_id             Int?
+  id_proprietario      Int
+  id_destinatario      Int
+  token                String   @unique @db.VarChar(100)
+  expira_em            DateTime
+  criado_em            DateTime @default(now())
+  arquivo_fk_comp      Arquivo? @relation(fields: [arquivo_id], references: [id_arquivo], onDelete: Cascade, onUpdate: Cascade)
+  pasta_fk_comp        Pasta?   @relation(fields: [pasta_id], references: [id_pasta], onDelete: Cascade, onUpdate: Cascade)
+  proprietario_fk_comp Usuario  @relation("Proprietario", fields: [id_proprietario], references: [id_usuario], onDelete: Cascade, onUpdate: Cascade)
+  destinatario_fk_comp Usuario  @relation("Destinatario", fields: [id_destinatario], references: [id_usuario], onDelete: Cascade, onUpdate: Cascade)
+}
